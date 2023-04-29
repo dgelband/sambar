@@ -166,7 +166,7 @@ int main()
 	std::vector<Box> boxes;
 
 	// Generate ground
-	boxes.push_back(createGround(350, 50, 1.0e9, 100, ground_texture));
+	boxes.push_back(createGround(350, 50, 50000, 100, ground_texture));
 
 	// Generate a lot of boxes
     const int n_boxes = 5;
@@ -193,9 +193,11 @@ int main()
                        .rotation = 0.0,
                        .texture = sambar_top_texture};
 
+    float force = 0.f;
+    float angular_impulse = 0.f;
+    float rotation = 0.f;
     while (window.isOpen())
     {
-        //window.clear(sf::Color(32,32,32));
         sf::Event event;
         while (window.pollEvent(event))
         {
@@ -205,29 +207,33 @@ int main()
                 switch(event.key.code) {
                     case sf::Keyboard::H:
                         // Strong reverse
-	                    sambar.body->ApplyForceToCenter(b2Vec2(-45000, 10), false);
+	                    force = -15000;
+                        angular_impulse = -500000;
                         break;
                     case sf::Keyboard::J:
                         // Reverse
-	                    sambar.body->ApplyForceToCenter(b2Vec2(-30000, 10), false);
+	                    force = -10000;
+                        angular_impulse = -370000;
                         break;
                     case sf::Keyboard::K:
                         // Forward
-	                    sambar.body->ApplyForceToCenter(b2Vec2(30000, 10), false);
+	                    force = 10000;
+                        angular_impulse = 370000;
                         break;
                     case sf::Keyboard::L:
                         // Strong forward
-	                    sambar.body->ApplyForceToCenter(b2Vec2(45000, 10), false);
+	                    force = 15000;
+                        angular_impulse = 500000;
                         break;
                     case sf::Keyboard::A:
                         // Left turn
                         sambar_top.texture = sambar_left_texture;
-	                    sambar_top.rotation -= 3.0f;
+	                    rotation = -1.f;
                         break;
                     case sf::Keyboard::D:
                         // Right turn
                         sambar_top.texture = sambar_right_texture;
-	                    sambar_top.rotation += 3.0f;
+	                    rotation = 1.f;
                         break;
                 }
             } else if (event.type == sf::Event::KeyReleased) {
@@ -236,11 +242,24 @@ int main()
                     case sf::Keyboard::D:
                         // No turn
                         sambar_top.texture = sambar_top_texture;
+	                    rotation = 0.f;
+                        break;
+                    case sf::Keyboard::H:
+                    case sf::Keyboard::J:
+                    case sf::Keyboard::K:
+                    case sf::Keyboard::L:
+                        force = 0.f;
+                        angular_impulse = 0.f;
                         break;
                 }
             }
         }
+        // Apply updates to sambar side
+	    sambar.body->ApplyForceToCenter(b2Vec2(force, 10), true);
+        sambar.body->ApplyAngularImpulse(angular_impulse, true);
+
         // Apply updates to sambar top
+        sambar_top.rotation += rotation;
         auto & v = sambar.body->GetLinearVelocity();
         // We will only use horizontal component, not vertical
         sambar_top.x += std::sin(sambar_top.rotation / DEG_PER_RAD) * v.x;
