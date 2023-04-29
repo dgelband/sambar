@@ -1,6 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include <box2d/box2d.h>
-//#include <random>
+#include <random>
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -28,6 +28,7 @@ Box createBox(float x, float y, float width, float height, float density, float 
 	b2BodyDef boxBodyDef;
 	boxBodyDef.position.Set(x / PPM, y / PPM);
 	boxBodyDef.type = b2_dynamicBody;
+    boxBodyDef.angularDamping = 100000.0f;
 
 	// Shape definition
 	b2PolygonShape boxShape;
@@ -91,14 +92,12 @@ void render(sf::RenderWindow &w, std::vector<Box> &boxes)
 	w.display();
 }
 
-
-
 int main()
 {
 
-//    std::random_device rd{};
-//    std::mt19937 gen{rd()};
-//    std::normal_distribution<> d{0.0001, 0.00005}; 
+    std::random_device rd{};
+    std::mt19937 gen{rd()};
+    std::uniform_int_distribution<> d{0, 1000}; 
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH,WINDOW_HEIGHT), "Sambar Scamper");
     window.setFramerateLimit(60);
 
@@ -123,24 +122,25 @@ int main()
 	std::vector<Box> boxes;
 
 	// Generate ground
-	boxes.push_back(createGround(350, 50, 800, 100, basket2_texture));
+	boxes.push_back(createGround(350, 50, 80000, 100, basket2_texture));
 
 	// Generate a lot of boxes
-	for (int i = 0; i < 7; i++)
+	for (int i = 0; i < 4; i++)
 	{
-		// Starting positions are randomly generated: x between 50 and 550, y between 70 and 550
-		//auto &&box = createBox(50 + (std::rand() % (550 - 50 + 1)), 70 + (std::rand() % (550 - 70 + 1)), 24, 24, 1.f, 0.7f, *textures[std::rand() % 4]);
-		auto &&box = createBox(50, 170 + (std::rand() % (550 - 70 + 1)), 24, 24, 1.f, 0.7f, *textures[std::rand() % 4]);
+		// Starting positions are randomly generated: x between 72 and 88, y between 270 and 550
+		auto &&box = createBox(80 + (d(gen) % 8),
+                               270 + (d(gen) % (550 - 270 + 1)),
+                               32,
+                               24,
+                               80.f,
+                               0.7f,
+                               *textures[(d(gen)) % 4]);
 		boxes.push_back(box);
 	}
 
 	// Create a sambar
-	auto &&box = createBox(70, 200, 64, 64, 10.f, 0.7f, sambar_texture);
-	boxes.push_back(box);
-
-	// Yeet it to collide with the smaller boxes
-	//box.body->ApplyForceToCenter(b2Vec2(100000, 10), false);
-
+	auto &&sambar = createBox(90, 200, 64, 64, 150.f, 0.7f, sambar_texture);
+	boxes.push_back(sambar);
 
     while (window.isOpen())
     {
@@ -150,6 +150,14 @@ int main()
         {
             if (event.type == sf::Event::Closed)
                 window.close();
+            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::H))
+	            sambar.body->ApplyForceToCenter(b2Vec2(-15000, 0), false);
+            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::J))
+	            sambar.body->ApplyForceToCenter(b2Vec2(-10000, 0), false);
+            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::K))
+	            sambar.body->ApplyForceToCenter(b2Vec2(10000, 0), false);
+            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::L))
+	            sambar.body->ApplyForceToCenter(b2Vec2(15000, 0), false);
         }
         world.Step(1 / 60.f , 6, 3);
         render(window, boxes);
