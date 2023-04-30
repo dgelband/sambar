@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <box2d/box2d.h>
 #include <random>
+#include <iostream>
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -168,10 +169,10 @@ bool render(sf::RenderWindow &w, sf::View &side, sf::View &top, std::vector<Box>
 }
 
 bool reachedGoal(Sambar &sambar) {
-    float x = sambar.x - WINDOW_WIDTH;
-    float y = sambar.y;
+    float x = sambar.x - WINDOW_WIDTH + 145;
+    float y = sambar.y - 30;
     float dist = std::sqrt(x*x + y*y);  
-    return dist < 10.0;
+    return dist < 30.0;
 }
 
 void runLevel(sf::RenderWindow &window, sf::View &topview, sf::View &sideview, int n_boxes, Artwork &art) {
@@ -222,7 +223,7 @@ void runLevel(sf::RenderWindow &window, sf::View &topview, sf::View &sideview, i
     float rotation = 0.f;
     bool struck_ground = false;
     bool reached_goal = false;
-    while (window.isOpen() && !struck_ground)
+    while (window.isOpen() && !struck_ground && !reached_goal)
     {
         sf::Event event;
         while (window.pollEvent(event))
@@ -353,21 +354,32 @@ int main()
     sf::Texture ground_texture;
     if (!ground_texture.loadFromFile("img/basket-1.png", sf::IntRect(0,0,128,128))) return -1;
 
-    sf::Texture level_texture;
-    if (!level_texture.loadFromFile("img/level-3.png")) return -1;
+    sf::Texture level1_texture;
+    if (!level1_texture.loadFromFile("img/level-1.png")) return -1;
+
+    sf::Texture level2_texture;
+    if (!level2_texture.loadFromFile("img/level-2.png")) return -1;
+
+    sf::Texture level3_texture;
+    if (!level3_texture.loadFromFile("img/level-3.png")) return -1;
 
     Artwork art { .basket1 = basket1_texture,
                   .basket2 = basket2_texture,
                   .crate1 = crate1_texture,
                   .crate2 = crate2_texture,
-                  .level = level_texture,
+                  .level = level1_texture,
                   .sambar_left = sambar_left_texture,
                   .sambar_right = sambar_right_texture,
                   .sambar_side = sambar_texture,
                   .sambar_top = sambar_top_texture }; 
-    int n_boxes = 2;
-    while (window.isOpen() && n_boxes < 12) {
-        runLevel(window, topview, sideview, n_boxes++, art);
+
+    sf::Texture *level_textures[] {&level1_texture, &level2_texture, &level3_texture};
+    for (int n_level = 0; n_level < 3; n_level++) {
+        int n_boxes = 2;
+        art.level = *level_textures[n_level];
+        while (window.isOpen() && n_boxes < 8) {
+            runLevel(window, topview, sideview, n_boxes++, art);
+        }
     }
 
     return 0;
