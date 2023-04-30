@@ -76,7 +76,7 @@ Box createGround(float x, float y, float width, float height, sf::Texture &textu
 
 void render(sf::RenderWindow &w, sf::View &side, sf::View &top, std::vector<Box> &boxes, Sambar &sambar)
 {
-    // Side view - last box is a sambar
+    // Side view - first box is ground, last box is a sambar
     side.setCenter(sf::Vector2f(boxes.back().body->GetPosition().x * PPM, 0.5f * WINDOW_HEIGHT));
     w.setView(side);
 	w.clear(sf::Color(64,64,64));
@@ -84,6 +84,8 @@ void render(sf::RenderWindow &w, sf::View &side, sf::View &top, std::vector<Box>
 	sky.setPosition(boxes.back().body->GetPosition().x * PPM - WINDOW_WIDTH*0.15, 0);
     sky.setFillColor(sf::Color::Cyan);
     w.draw(sky);
+    b2Body* ground = boxes.front().body;
+    b2Body* truck = boxes.back().body;
 
 	for (const auto &box : boxes)
 	{
@@ -104,6 +106,18 @@ void render(sf::RenderWindow &w, sf::View &side, sf::View &top, std::vector<Box>
 
         rect.setTexture(box.texture);
 		w.draw(rect);
+
+        // Check if we dropped a box
+        if (box.body == ground || box.body == truck) {
+            continue;
+        }
+        b2ContactEdge* edge = box.body->GetContactList();
+        while (edge != nullptr) {
+            if (edge->other == ground) {
+                exit(1);
+            }
+            edge = edge->next;
+        }
 	}
 
     // Top view
