@@ -16,10 +16,10 @@ b2World world(b2Vec2(0, -9.8));
 // A structure with all we need to render a box
 struct Box
 {
-	float width;
-	float height;
-	sf::Texture texture;
-	b2Body *body;
+    float width;
+    float height;
+    sf::Texture texture;
+    b2Body *body;
 };
 
 struct Sambar
@@ -27,33 +27,33 @@ struct Sambar
     float x;
     float y;
     float rotation;
-	sf::Texture texture;
+    sf::Texture texture;
 };
 
 Box createBox(float x, float y, float width, float height, float density, float friction, sf::Texture &texture)
 {
-	// Body definition
-	b2BodyDef boxBodyDef;
-	boxBodyDef.position.Set(x / PPM, y / PPM);
-	boxBodyDef.type = b2_dynamicBody;
+    // Body definition
+    b2BodyDef boxBodyDef;
+    boxBodyDef.position.Set(x / PPM, y / PPM);
+    boxBodyDef.type = b2_dynamicBody;
     boxBodyDef.angularDamping = 100000.0f;
 
-	// Shape definition
-	b2PolygonShape boxShape;
-	boxShape.SetAsBox(width / 2 / PPM, height / 2 / PPM);
+    // Shape definition
+    b2PolygonShape boxShape;
+    boxShape.SetAsBox(width / 2 / PPM, height / 2 / PPM);
 
-	// Fixture definition
-	b2FixtureDef fixtureDef;
-	fixtureDef.density = density;
-	fixtureDef.friction = friction;
-	fixtureDef.shape = &boxShape;
+    // Fixture definition
+    b2FixtureDef fixtureDef;
+    fixtureDef.density = density;
+    fixtureDef.friction = friction;
+    fixtureDef.shape = &boxShape;
 
-	// Now we have a body for our Box object
-	b2Body *boxBody = world.CreateBody(&boxBodyDef);
-	// Lastly, assign the fixture
-	boxBody->CreateFixture(&fixtureDef);
+    // Now we have a body for our Box object
+    b2Body *boxBody = world.CreateBody(&boxBodyDef);
+    // Lastly, assign the fixture
+    boxBody->CreateFixture(&fixtureDef);
 
-	return Box { width, height, texture, boxBody };
+    return Box { width, height, texture, boxBody };
 }
 
 void destroyBox(b2Body* box) {
@@ -62,20 +62,20 @@ void destroyBox(b2Body* box) {
 
 Box createGround(float x, float y, float width, float height, sf::Texture &texture)
 {
-	// Static body definition
-	b2BodyDef groundBodyDef;
-	groundBodyDef.position.Set(x / PPM, y / PPM);
+    // Static body definition
+    b2BodyDef groundBodyDef;
+    groundBodyDef.position.Set(x / PPM, y / PPM);
 
-	// Shape definition
-	b2PolygonShape groundBox;
-	groundBox.SetAsBox(width / 2 / PPM, height / 2 / PPM);
+    // Shape definition
+    b2PolygonShape groundBox;
+    groundBox.SetAsBox(width / 2 / PPM, height / 2 / PPM);
 
-	// Now we have a body for our Box object
-	b2Body *groundBody = world.CreateBody(&groundBodyDef);
-	// For a static body, we don't need a custom fixture definition, this will do:
-	groundBody->CreateFixture(&groundBox, 0.0f);
+    // Now we have a body for our Box object
+    b2Body *groundBody = world.CreateBody(&groundBodyDef);
+    // For a static body, we don't need a custom fixture definition, this will do:
+    groundBody->CreateFixture(&groundBox, 0.0f);
 
-	return Box{ width, height, texture, groundBody };
+    return Box{ width, height, texture, groundBody };
 }
 
 // return true if box struck the ground
@@ -84,33 +84,33 @@ bool render(sf::RenderWindow &w, sf::View &side, sf::View &top, std::vector<Box>
     // Side view - first box is ground, last box is a sambar
     side.setCenter(sf::Vector2f(boxes.back().body->GetPosition().x * PPM, 0.5f * WINDOW_HEIGHT));
     w.setView(side);
-	w.clear(sf::Color(64,64,64));
+    w.clear(sf::Color(64,64,64));
     sf::RectangleShape sky(sf::Vector2f(WINDOW_WIDTH*0.3, WINDOW_HEIGHT*0.8));
-	sky.setPosition(boxes.back().body->GetPosition().x * PPM - WINDOW_WIDTH*0.15, 0);
+    sky.setPosition(boxes.back().body->GetPosition().x * PPM - WINDOW_WIDTH*0.15, 0);
     sky.setFillColor(sf::Color::Cyan);
     w.draw(sky);
     b2Body* ground = boxes.front().body;
     b2Body* truck = boxes.back().body;
 
-	for (const auto &box : boxes)
-	{
+    for (const auto &box : boxes)
+    {
         sf::Sprite rect;
 
-		// For the correct Y coordinate of our drawable rect, we must substract from WINDOW_HEIGHT
-		// because SFML uses OpenGL coordinate system where X is right, Y is down
-		// while Box2D uses traditional X is right, Y is up
-		rect.setPosition(box.body->GetPosition().x * PPM, WINDOW_HEIGHT - (box.body->GetPosition().y * PPM));
+        // For the correct Y coordinate of our drawable rect, we must substract from WINDOW_HEIGHT
+        // because SFML uses OpenGL coordinate system where X is right, Y is down
+        // while Box2D uses traditional X is right, Y is up
+        rect.setPosition(box.body->GetPosition().x * PPM, WINDOW_HEIGHT - (box.body->GetPosition().y * PPM));
 
-		// We also need to set our drawable's origin to its center
-		// because in SFML, "position" refers to the upper left corner
-		// while in Box2D, "position" refers to the body's center
-		rect.setOrigin(box.width / 2, box.height / 2);
+        // We also need to set our drawable's origin to its center
+        // because in SFML, "position" refers to the upper left corner
+        // while in Box2D, "position" refers to the body's center
+        rect.setOrigin(box.width / 2, box.height / 2);
 
-		// For the rect to be rotated in the crrect direction, we have to multiply by -1
-		rect.setRotation(-1 * box.body->GetAngle() * DEG_PER_RAD);
+        // For the rect to be rotated in the crrect direction, we have to multiply by -1
+        rect.setRotation(-1 * box.body->GetAngle() * DEG_PER_RAD);
 
         rect.setTexture(box.texture);
-		w.draw(rect);
+        w.draw(rect);
 
         // Check if we dropped a box
         if (box.body == ground || box.body == truck) {
@@ -123,19 +123,19 @@ bool render(sf::RenderWindow &w, sf::View &side, sf::View &top, std::vector<Box>
             }
             edge = edge->next;
         }
-	}
+    }
 
     // Top view
     w.setView(top);
     top.setCenter(sf::Vector2f(0.5f * WINDOW_WIDTH, 0.5f * WINDOW_HEIGHT));
     sf::Sprite samsprite;
     samsprite.setPosition(sambar.x, WINDOW_HEIGHT - sambar.y);
-	samsprite.setOrigin(16, 16);
+    samsprite.setOrigin(16, 16);
     samsprite.setRotation(sambar.rotation);
     samsprite.setTexture(sambar.texture);
     w.draw(samsprite);
 
-	w.display();
+    w.display();
 
     return false;
 }
@@ -186,29 +186,29 @@ int main()
     int n_boxes = 1;
     while (window.isOpen()) {
         n_boxes++;
-    	// Container to hold all the boxes we create
-    	std::vector<Box> boxes;
+        // Container to hold all the boxes we create
+        std::vector<Box> boxes;
     
-    	// Generate ground
-    	boxes.push_back(createGround(350, 50, 50000, 100, ground_texture));
+        // Generate ground
+        boxes.push_back(createGround(350, 50, 50000, 100, ground_texture));
     
-    	// Generate a lot of boxes
-    	for (int i = 0; i < n_boxes; i++)
-    	{
-    		// Starting positions are randomly generated: x between 74 and 86, y between 270 and 55*n boxes
-    		auto &&box = createBox(80 + (d(gen) % 6),
+        // Generate a lot of boxes
+        for (int i = 0; i < n_boxes; i++)
+        {
+            // Starting positions are randomly generated: x between 74 and 86, y between 270 and 55*n boxes
+            auto &&box = createBox(80 + (d(gen) % 6),
                                    270 + (d(gen) % (72*n_boxes - 270 + 1)),
                                    32,
                                    24,
                                    80.f,
                                    0.7f,
                                    *textures[(d(gen)) % 4]);
-    		boxes.push_back(box);
-    	}
+            boxes.push_back(box);
+        }
     
-    	// Create a sambar box
-    	auto &&sambar = createBox(90, 200, 64, 64, 500.f, 0.7f, sambar_texture);
-    	boxes.push_back(sambar);
+        // Create a sambar box
+        auto &&sambar = createBox(90, 200, 64, 64, 500.f, 0.7f, sambar_texture);
+        boxes.push_back(sambar);
     
         // Create a sambar from above
         Sambar sambar_top {.x = 400.0,
@@ -231,33 +231,33 @@ int main()
                     switch(event.key.code) {
                         case sf::Keyboard::H:
                             // Strong reverse
-    	                    force = -15000;
+                            force = -15000;
                             angular_impulse = -500000;
                             break;
                         case sf::Keyboard::J:
                             // Reverse
-    	                    force = -12000;
+                            force = -12000;
                             angular_impulse = -370000;
                             break;
                         case sf::Keyboard::K:
                             // Forward
-    	                    force = 12000;
+                            force = 12000;
                             angular_impulse = 370000;
                             break;
                         case sf::Keyboard::L:
                             // Strong forward
-    	                    force = 15000;
+                            force = 15000;
                             angular_impulse = 500000;
                             break;
                         case sf::Keyboard::A:
                             // Left turn
                             sambar_top.texture = sambar_left_texture;
-    	                    rotation = -4.f;
+                            rotation = -4.f;
                             break;
                         case sf::Keyboard::D:
                             // Right turn
                             sambar_top.texture = sambar_right_texture;
-    	                    rotation = 4.f;
+                            rotation = 4.f;
                             break;
                     }
                 } else if (event.type == sf::Event::KeyReleased) {
@@ -266,33 +266,33 @@ int main()
                         case sf::Keyboard::D:
                             // No turn
                             sambar_top.texture = sambar_top_texture;
-    	                    rotation = 0.f;
+                            rotation = 0.f;
                             break;
                         case sf::Keyboard::H:
                             // Strong reverse if it was most recently pressed
-    	                    force = force == -15000 ? 0 : force;
+                            force = force == -15000 ? 0 : force;
                             angular_impulse = angular_impulse == -500000 ? 0 : angular_impulse;
                             break;
                         case sf::Keyboard::J:
                             // Reverse if it was most recently pressed
-    	                    force = force == -12000 ? 0 : force;
+                            force = force == -12000 ? 0 : force;
                             angular_impulse = angular_impulse == -370000 ? 0 : angular_impulse;
                             break;
                         case sf::Keyboard::K:
                             // Forward if it was most recently pressed
-    	                    force = force == 12000 ? 0 : force;
+                            force = force == 12000 ? 0 : force;
                             angular_impulse = angular_impulse == 370000 ? 0 : angular_impulse;
                             break;
                         case sf::Keyboard::L:
                             // Strong forward if it was most recently pressed
-    	                    force = force == 15000 ? 0 : force;
+                            force = force == 15000 ? 0 : force;
                             angular_impulse = angular_impulse == 500000 ? 0 : angular_impulse;
                             break;
                     }
                 }
             }
             // Apply updates to sambar side
-    	    sambar.body->ApplyForceToCenter(b2Vec2(force, 10), true);
+            sambar.body->ApplyForceToCenter(b2Vec2(force, 10), true);
             sambar.body->ApplyAngularImpulse(angular_impulse, true);
     
             // Apply updates to sambar top
