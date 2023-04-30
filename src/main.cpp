@@ -177,16 +177,16 @@ bool render(sf::RenderWindow &w, sf::View &side, sf::View &top, std::vector<Box>
         circ.setPosition(sf::Vector2f(tree.x, WINDOW_HEIGHT - tree.y));
         circ.setOrigin(20, 20);
         circ.setFillColor(sf::Color::Green);
-    //    w.draw(circ);
+//        w.draw(circ);
     }
 
     // Debug - mud view
     for (const auto &mud : level.mud) {
-        sf::CircleShape circ(50.0);
+        sf::CircleShape circ(40.0);
         circ.setPosition(sf::Vector2f(mud.x, WINDOW_HEIGHT - mud.y));
-        circ.setOrigin(25.,25.);
+        circ.setOrigin(40,40);
         circ.setFillColor(sf::Color::Yellow);
-        w.draw(circ);
+//        w.draw(circ);
     }
 
     w.display();
@@ -198,7 +198,7 @@ bool reachedGoal(Sambar &sambar) {
     float x = sambar.x - WINDOW_WIDTH + 145;
     float y = sambar.y - 30;
     float dist = std::sqrt(x*x + y*y);  
-    std::cout << "x: " << sambar.x << " y:" << sambar.y << std::endl;
+//    std::cout << "x: " << sambar.x << " y:" << sambar.y << std::endl;
     return dist < 30.0;
 }
 
@@ -217,7 +217,7 @@ bool struckMud(Sambar &sambar, Level &level) {
         float x = sambar.x - mud.x;
         float y = sambar.y - mud.y;
         float dist = std::sqrt(x*x + y*y);  
-        if (dist < 50.0) return true;
+        if (dist < 40.0) return true;
     }
     return false;
 }
@@ -358,6 +358,11 @@ void runLevel(sf::RenderWindow &window, sf::View &topview, sf::View &sideview, i
             b2Vec2 rebound(-sambar_mass * 60. * 2. * sambar.body->GetLinearVelocity());
             sambar.body->ApplyForceToCenter(rebound, true);
         }
+        if (struckMud(sambar_top, level)) {
+            // instant slowdown, timestep 1/60
+            b2Vec2 rebound(-sambar_mass * 60. * 0.25 * sambar.body->GetLinearVelocity());
+            sambar.body->ApplyForceToCenter(rebound, true);
+        }
         reached_goal = reachedGoal(sambar_top);
         struck_ground = render(window, sideview, topview, boxes, sambar_top, level);
 
@@ -424,6 +429,7 @@ int main()
                   .sambar_side = sambar_texture,
                   .sambar_top = sambar_top_texture }; 
 
+    // TODO: store this appropriately
     Level levels[3];
     levels[0].texture = level1_texture;
     levels[0].trees.push_back(Obstacle{199.f, 531.f});
@@ -447,14 +453,114 @@ int main()
     levels[0].trees.push_back(Obstacle{426.f, 37.f});
     levels[0].trees.push_back(Obstacle{285.f, 37.f});
     levels[0].trees.push_back(Obstacle{142.f, 37.f});
+    levels[0].mud.push_back(Obstacle{210.f, 460.f});
+    levels[0].mud.push_back(Obstacle{210.f, 302.f});
+    levels[0].mud.push_back(Obstacle{210.f, 150.f});
+    levels[0].mud.push_back(Obstacle{305.f, 210.f});
+    levels[0].mud.push_back(Obstacle{305.f, 365.f});
+    levels[0].mud.push_back(Obstacle{415.f, 216.f});
+    levels[0].mud.push_back(Obstacle{230.f, 255.f});
+    levels[0].mud.push_back(Obstacle{642.f, 200.f});
+    levels[0].mud.push_back(Obstacle{210.f, 37.f});
+    levels[0].mud.push_back(Obstacle{428.f, 84.f});
+    levels[0].mud.push_back(Obstacle{519.f, 120.f});
+    levels[0].mud.push_back(Obstacle{289.f, 527.f});
+    levels[0].mud.push_back(Obstacle{521.f, 247.f});
+    levels[0].mud.push_back(Obstacle{644.f, 304.f});
+    levels[0].mud.push_back(Obstacle{522.f, 398.f});
+    levels[0].mud.push_back(Obstacle{599.f, 524.f});
     levels[1].texture = level2_texture;
+    levels[1].trees.push_back(Obstacle{247.f, 560.f});
+    levels[1].trees.push_back(Obstacle{515.f, 560.f});
+    levels[1].trees.push_back(Obstacle{625.f, 530.f});
+    levels[1].trees.push_back(Obstacle{346.f, 530.f});
+    levels[1].trees.push_back(Obstacle{227.f, 475.f});
+    levels[1].trees.push_back(Obstacle{570.f, 445.f});
+    levels[1].trees.push_back(Obstacle{169.f, 244.f});
+    levels[1].trees.push_back(Obstacle{341.f, 210.f});
+    levels[1].trees.push_back(Obstacle{485.f, 180.f});
+    levels[1].trees.push_back(Obstacle{631.f, 154.f});
+    levels[1].trees.push_back(Obstacle{424.f, 70.f});
+    levels[1].trees.push_back(Obstacle{279.f, 124.f});
+    levels[1].trees.push_back(Obstacle{143.f, 37.f});
+    levels[1].mud.push_back(Obstacle{202.f, 391.f});
+    levels[1].mud.push_back(Obstacle{243.f, 277.f});
+    levels[1].mud.push_back(Obstacle{332.f, 359.f});
+    levels[1].mud.push_back(Obstacle{414.f, 444.f});
+    levels[1].mud.push_back(Obstacle{477.f, 368.f});
+    levels[1].mud.push_back(Obstacle{406.f, 203.f});
+    levels[1].mud.push_back(Obstacle{548.f, 300.f});
+    levels[1].mud.push_back(Obstacle{617.f, 235.f});
+    levels[1].mud.push_back(Obstacle{512.f, 57.f});
+    levels[1].mud.push_back(Obstacle{491.f, 239.f});
+    levels[1].mud.push_back(Obstacle{404.f, 296.f});
+    levels[1].mud.push_back(Obstacle{470.f, 113.f});
+    levels[1].mud.push_back(Obstacle{589.f, 171.f});
     levels[2].texture = level3_texture;
+    levels[2].trees.push_back(Obstacle{227.f, 556.f});
+    levels[2].trees.push_back(Obstacle{227.f, 500.f});
+    levels[2].trees.push_back(Obstacle{201.f, 443.f});
+    levels[2].trees.push_back(Obstacle{201.f, 382.f});
+    levels[2].trees.push_back(Obstacle{255.f, 414.f});
+    levels[2].trees.push_back(Obstacle{255.f, 354.f});
+    levels[2].trees.push_back(Obstacle{343.f, 500.f});
+    levels[2].trees.push_back(Obstacle{343.f, 442.f});
+    levels[2].trees.push_back(Obstacle{400.f, 413.f});
+    levels[2].trees.push_back(Obstacle{427.f, 471.f});
+    levels[2].trees.push_back(Obstacle{513.f, 500.f});
+    levels[2].trees.push_back(Obstacle{489.f, 411.f});
+    levels[2].trees.push_back(Obstacle{456.f, 353.f});
+    levels[2].trees.push_back(Obstacle{490.f, 300.f});
+    levels[2].trees.push_back(Obstacle{395.f, 300.f});
+    levels[2].trees.push_back(Obstacle{343.f, 270.f});
+    levels[2].trees.push_back(Obstacle{230.f, 155.f});
+    levels[2].trees.push_back(Obstacle{287.f, 99.f});
+    levels[2].trees.push_back(Obstacle{319.f, 154.f});
+    levels[2].trees.push_back(Obstacle{370.f, 184.f});
+    levels[2].trees.push_back(Obstacle{460.f, 90.f});
+    levels[2].trees.push_back(Obstacle{543.f, 185.f});
+    levels[2].trees.push_back(Obstacle{164.f, 584.f});
+    levels[2].trees.push_back(Obstacle{282.f, 584.f});
+    levels[2].trees.push_back(Obstacle{340.f, 584.f});
+    levels[2].trees.push_back(Obstacle{398.f, 584.f});
+    levels[2].trees.push_back(Obstacle{456.f, 584.f});
+    levels[2].trees.push_back(Obstacle{510.f, 584.f});
+    levels[2].trees.push_back(Obstacle{568.f, 584.f});
+    levels[2].trees.push_back(Obstacle{141.f, 267.f});
+    levels[2].trees.push_back(Obstacle{141.f, 40.f});
+    levels[2].trees.push_back(Obstacle{433.f, 40.f});
+    levels[2].trees.push_back(Obstacle{485.f, 40.f});
+    levels[2].trees.push_back(Obstacle{545.f, 12.f});
+    levels[2].trees.push_back(Obstacle{373.f, 12.f});
+    levels[2].trees.push_back(Obstacle{312.f, 12.f});
+    levels[2].trees.push_back(Obstacle{257.f, 12.f});
+    levels[2].trees.push_back(Obstacle{199.f, 12.f});
+    levels[2].trees.push_back(Obstacle{121.f, 90.f});
+    levels[2].trees.push_back(Obstacle{121.f, 180.f});
+    levels[2].trees.push_back(Obstacle{121.f, 324.f});
+    levels[2].trees.push_back(Obstacle{121.f, 383.f});
+    levels[2].trees.push_back(Obstacle{121.f, 440.f});
+    levels[2].trees.push_back(Obstacle{121.f, 498.f});
+    levels[2].trees.push_back(Obstacle{121.f, 553.f});
+    levels[2].trees.push_back(Obstacle{599.f, 381.f});
+    levels[2].trees.push_back(Obstacle{599.f, 152.f});
+    levels[2].trees.push_back(Obstacle{630.f, 95.f});
+    levels[2].trees.push_back(Obstacle{630.f, 213.f});
+    levels[2].trees.push_back(Obstacle{630.f, 330.f});
+    levels[2].trees.push_back(Obstacle{630.f, 442.f});
+    levels[2].trees.push_back(Obstacle{630.f, 556.f});
+    levels[2].trees.push_back(Obstacle{658.f, 500.f});
+    levels[2].trees.push_back(Obstacle{658.f, 386.f});
+    levels[2].trees.push_back(Obstacle{658.f, 270.f});
+    levels[2].trees.push_back(Obstacle{658.f, 154.f});
+    levels[2].mud.push_back(Obstacle{233.f,253.f});
+    levels[2].mud.push_back(Obstacle{455.f,198.f});
 
     // Set up obstacles
 
     for (int n_level = 0; n_level < 3; n_level++) {
         int n_boxes = 2;
-        while (window.isOpen() && n_boxes < 8) {
+        while (window.isOpen() && n_boxes < 12) {
             runLevel(window, topview, sideview, n_boxes++, art, levels[n_level]);
         }
     }
