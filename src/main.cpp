@@ -232,7 +232,7 @@ void runLevel(sf::RenderWindow &window, sf::View &topview, sf::View &sideview, i
     std::vector<Box> boxes;
     
     // Generate ground
-    boxes.push_back(createGround(350, 50, 50000, 100, art.crate1));
+    boxes.push_back(createGround(350, 80, 50000, 100, art.crate1));
     
     // Generate a lot of boxes
     sf::Texture *box_textures[] {&art.crate1, &art.crate2, &art.basket1, &art.basket2};
@@ -250,7 +250,7 @@ void runLevel(sf::RenderWindow &window, sf::View &topview, sf::View &sideview, i
     }
     
     // Create a sambar box
-    auto &&sambar = createBox(90, 200, 72, 32, sambar_density, 0.7f, art.sambar_side);
+    auto &&sambar = createBox(90, 200, 72, 30, sambar_density, 0.7f, art.sambar_side);
     sambar.height = 64;
     boxes.push_back(sambar);
     
