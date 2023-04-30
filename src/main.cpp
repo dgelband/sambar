@@ -31,9 +31,17 @@ struct Sambar
     sf::Texture texture;
 };
 
+struct Obstacle
+{
+    float x;
+    float y;
+};
+
 struct Level
 {
     sf::Texture texture;
+    std::vector<Obstacle> trees;
+    std::vector<Obstacle> mud;
 };
 
 struct Artwork
@@ -163,6 +171,24 @@ bool render(sf::RenderWindow &w, sf::View &side, sf::View &top, std::vector<Box>
     samsprite.setTexture(sambar.texture);
     w.draw(samsprite);
 
+    // Debug - tree view
+    for (const auto &tree : level.trees) {
+        sf::CircleShape circ(20.0);
+        circ.setPosition(sf::Vector2f(tree.x, WINDOW_HEIGHT - tree.y));
+        circ.setOrigin(20, 20);
+        circ.setFillColor(sf::Color::Green);
+    //    w.draw(circ);
+    }
+
+    // Debug - mud view
+    for (const auto &mud : level.mud) {
+        sf::CircleShape circ(50.0);
+        circ.setPosition(sf::Vector2f(mud.x, WINDOW_HEIGHT - mud.y));
+        circ.setOrigin(25.,25.);
+        circ.setFillColor(sf::Color::Yellow);
+        w.draw(circ);
+    }
+
     w.display();
 
     return false;
@@ -172,13 +198,35 @@ bool reachedGoal(Sambar &sambar) {
     float x = sambar.x - WINDOW_WIDTH + 145;
     float y = sambar.y - 30;
     float dist = std::sqrt(x*x + y*y);  
+    std::cout << "x: " << sambar.x << " y:" << sambar.y << std::endl;
     return dist < 30.0;
 }
 
-void runLevel(sf::RenderWindow &window, sf::View &topview, sf::View &sideview, int n_boxes, Artwork &art) {
+bool struckTree(Sambar &sambar, Level &level) {
+    for (auto & tree : level.trees) {
+        float x = sambar.x - tree.x;
+        float y = sambar.y - tree.y;
+        float dist = std::sqrt(x*x + y*y);  
+        if (dist < 20.0) return true;
+    }
+    return false;
+}
+
+bool struckMud(Sambar &sambar, Level &level) {
+    for (auto & mud : level.mud) {
+        float x = sambar.x - mud.x;
+        float y = sambar.y - mud.y;
+        float dist = std::sqrt(x*x + y*y);  
+        if (dist < 50.0) return true;
+    }
+    return false;
+}
+
+void runLevel(sf::RenderWindow &window, sf::View &topview, sf::View &sideview, int n_boxes, Artwork &art, Level &level) {
     std::random_device rd{};
     std::mt19937 gen{rd()};
     std::uniform_int_distribution<> d{0, 1000}; 
+    float sambar_mass = 500.f;
 
     // Container to hold all the boxes we create
     std::vector<Box> boxes;
@@ -202,11 +250,10 @@ void runLevel(sf::RenderWindow &window, sf::View &topview, sf::View &sideview, i
     }
     
     // Create a sambar box
-    auto &&sambar = createBox(90, 200, 64, 64, 500.f, 0.7f, art.sambar_side);
+    auto &&sambar = createBox(90, 200, 64, 64, sambar_mass, 0.7f, art.sambar_side);
     boxes.push_back(sambar);
     
     // Create a sambar from above
-    Level level {.texture = art.level};
     Sambar sambar_top {.x = 155.0,
                        .y = 520.0,
                        .rotation = 180.0,
@@ -306,6 +353,11 @@ void runLevel(sf::RenderWindow &window, sf::View &topview, sf::View &sideview, i
         sambar_top.y += std::cos(sambar_top.rotation / DEG_PER_RAD) * v.x;
     
         world.Step(1 / 60.f , 6, 3);
+        if (struckTree(sambar_top, level)) {
+            // instant rebound, timestep 1/60
+            b2Vec2 rebound(-sambar_mass * 60. * 2. * sambar.body->GetLinearVelocity());
+            sambar.body->ApplyForceToCenter(rebound, true);
+        }
         reached_goal = reachedGoal(sambar_top);
         struck_ground = render(window, sideview, topview, boxes, sambar_top, level);
 
@@ -367,18 +419,43 @@ int main()
                   .basket2 = basket2_texture,
                   .crate1 = crate1_texture,
                   .crate2 = crate2_texture,
-                  .level = level1_texture,
                   .sambar_left = sambar_left_texture,
                   .sambar_right = sambar_right_texture,
                   .sambar_side = sambar_texture,
                   .sambar_top = sambar_top_texture }; 
 
-    sf::Texture *level_textures[] {&level1_texture, &level2_texture, &level3_texture};
+    Level levels[3];
+    levels[0].texture = level1_texture;
+    levels[0].trees.push_back(Obstacle{199.f, 531.f});
+    levels[0].trees.push_back(Obstacle{372.f, 556.f});
+    levels[0].trees.push_back(Obstacle{515.f, 556.f});
+    levels[0].trees.push_back(Obstacle{659.f, 528.f});
+    levels[0].trees.push_back(Obstacle{313.f, 441.f});
+    levels[0].trees.push_back(Obstacle{480.f, 441.f});
+    levels[0].trees.push_back(Obstacle{629.f, 382.f});
+    levels[0].trees.push_back(Obstacle{199.f, 382.f});
+    levels[0].trees.push_back(Obstacle{400.f, 382.f});
+    levels[0].trees.push_back(Obstacle{198.f, 236.f});
+    levels[0].trees.push_back(Obstacle{313.f, 294.f});
+    levels[0].trees.push_back(Obstacle{514.f, 332.f});
+    levels[0].trees.push_back(Obstacle{459.f, 272.f});
+    levels[0].trees.push_back(Obstacle{256.f, 152.f});
+    levels[0].trees.push_back(Obstacle{430.f, 152.f});
+    levels[0].trees.push_back(Obstacle{511.f, 183.f});
+    levels[0].trees.push_back(Obstacle{660.f, 183.f});
+    levels[0].trees.push_back(Obstacle{545.f, 67.f});
+    levels[0].trees.push_back(Obstacle{426.f, 37.f});
+    levels[0].trees.push_back(Obstacle{285.f, 37.f});
+    levels[0].trees.push_back(Obstacle{142.f, 37.f});
+    levels[1].texture = level2_texture;
+    levels[2].texture = level3_texture;
+
+    // Set up obstacles
+
     for (int n_level = 0; n_level < 3; n_level++) {
         int n_boxes = 2;
-        art.level = *level_textures[n_level];
         while (window.isOpen() && n_boxes < 8) {
-            runLevel(window, topview, sideview, n_boxes++, art);
+            runLevel(window, topview, sideview, n_boxes++, art, levels[n_level]);
         }
     }
 
