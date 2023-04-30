@@ -226,7 +226,7 @@ void runLevel(sf::RenderWindow &window, sf::View &topview, sf::View &sideview, i
     std::random_device rd{};
     std::mt19937 gen{rd()};
     std::uniform_int_distribution<> d{0, 1000}; 
-    float sambar_mass = 500.f;
+    float sambar_density = 800.f;
 
     // Container to hold all the boxes we create
     std::vector<Box> boxes;
@@ -250,7 +250,8 @@ void runLevel(sf::RenderWindow &window, sf::View &topview, sf::View &sideview, i
     }
     
     // Create a sambar box
-    auto &&sambar = createBox(90, 200, 64, 64, sambar_mass, 0.7f, art.sambar_side);
+    auto &&sambar = createBox(90, 200, 72, 32, sambar_density, 0.7f, art.sambar_side);
+    sambar.height = 64;
     boxes.push_back(sambar);
     
     // Create a sambar from above
@@ -355,12 +356,12 @@ void runLevel(sf::RenderWindow &window, sf::View &topview, sf::View &sideview, i
         world.Step(1 / 60.f , 6, 3);
         if (struckTree(sambar_top, level)) {
             // instant rebound, timestep 1/60
-            b2Vec2 rebound(-sambar_mass * 60. * 2. * sambar.body->GetLinearVelocity());
+            b2Vec2 rebound(-sambar_density * 60. * 2. * sambar.body->GetLinearVelocity());
             sambar.body->ApplyForceToCenter(rebound, true);
         }
         if (struckMud(sambar_top, level)) {
             // instant slowdown, timestep 1/60
-            b2Vec2 rebound(-sambar_mass * 60. * 0.25 * sambar.body->GetLinearVelocity());
+            b2Vec2 rebound(-sambar_density * 60. * 0.25 * sambar.body->GetLinearVelocity());
             sambar.body->ApplyForceToCenter(rebound, true);
         }
         reached_goal = reachedGoal(sambar_top);
@@ -383,6 +384,9 @@ int main()
     sf::View topview(sf::FloatRect(0.3*WINDOW_WIDTH+1,0.0,0.7*WINDOW_WIDTH,1.0*WINDOW_HEIGHT));
     sideview.setViewport(sf::FloatRect(0.f, 0.f, 0.3f, 1.0f));
     topview.setViewport(sf::FloatRect(0.3f, 0.f, 0.7f, 1.0f));
+
+    sf::Texture splash_texture;
+    if (!splash_texture.loadFromFile("img/splash.png")) return -1;
 
     sf::Texture sambar_texture;
     if (!sambar_texture.loadFromFile("img/sambar-side.png", sf::IntRect(0,32,128,128))) return -1;
@@ -556,8 +560,32 @@ int main()
     levels[2].mud.push_back(Obstacle{233.f,253.f});
     levels[2].mud.push_back(Obstacle{455.f,198.f});
 
-    // Set up obstacles
 
+
+    // Display splash
+    sf::Sprite splash;
+    splash.setPosition(0.5*WINDOW_WIDTH, 0.5*WINDOW_HEIGHT);
+    splash.setOrigin(0.5*WINDOW_WIDTH, 0.5*WINDOW_HEIGHT);
+    splash.setTexture(splash_texture);
+    bool key_pressed = false;
+    while (window.isOpen() && !key_pressed)
+    {
+        window.clear();
+        window.draw(splash);
+        window.display();
+        sf::Event event;
+        while (window.pollEvent(event)){
+            if (event.type == sf::Event::Closed)
+                window.close();
+
+            if (event.type == sf::Event::KeyPressed) {
+                key_pressed = true;
+                break;
+            }
+        }
+    }
+
+    // Execute levels
     for (int n_level = 0; n_level < 3; n_level++) {
         int n_boxes = 2;
         while (window.isOpen() && n_boxes < 12) {
