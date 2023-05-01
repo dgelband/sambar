@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <box2d/box2d.h>
 #include <random>
+#include <string>
 //#include <iostream>
 
 #define WINDOW_WIDTH 800
@@ -13,6 +14,11 @@
 
 // Box2D world for physics simulation, gravity = 9.8 m/s^2
 b2World world(b2Vec2(0, -9.8));
+
+// SFML font for text
+sf::Font font;
+
+int total = 0;
 
 // A structure with all we need to render a box
 struct Box
@@ -151,6 +157,14 @@ bool render(sf::RenderWindow &w, sf::View &side, sf::View &top, std::vector<Box>
             edge = edge->next;
         }
     }
+
+    std::string banner{"SCORE: "};
+    banner += std::to_string(total);
+    sf::Text text(banner, font);
+    text.setLetterSpacing(1.3);
+    text.setCharacterSize(72);
+    text.setOutlineThickness(2.0);
+    w.draw(text);
 
     // Level map
     w.setView(top);
@@ -367,6 +381,7 @@ void runLevel(sf::RenderWindow &window, sf::View &topview, sf::View &sideview, i
         reached_goal = reachedGoal(sambar_top);
         struck_ground = render(window, sideview, topview, boxes, sambar_top, level);
 
+        if (reached_goal) total += n_boxes;
         if (reached_goal || struck_ground) {
             for (auto & box : boxes) {
                 destroyBox(box.body);
@@ -377,6 +392,7 @@ void runLevel(sf::RenderWindow &window, sf::View &topview, sf::View &sideview, i
 
 int main()
 {
+    font.loadFromFile("img/FreeMonoBold.ttf");
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH,WINDOW_HEIGHT), "Sambar Scamper");
     window.setFramerateLimit(60);
 
