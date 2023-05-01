@@ -577,35 +577,37 @@ int main()
     levels[2].mud.push_back(Obstacle{455.f,198.f});
 
 
+    while (window.isOpen()) {
+        // Display splash
+        window.setView(window.getDefaultView());
+        sf::Sprite splash;
+        splash.setPosition(0.5*WINDOW_WIDTH, 0.5*WINDOW_HEIGHT);
+        splash.setOrigin(0.5*WINDOW_WIDTH, 0.5*WINDOW_HEIGHT);
+        splash.setTexture(splash_texture);
+        bool key_pressed = false;
+        while (window.isOpen() && !key_pressed)
+        {
+            window.clear();
+            window.draw(splash);
+            window.display();
+            sf::Event event;
+            while (window.pollEvent(event)){
+                if (event.type == sf::Event::Closed)
+                    window.close();
 
-    // Display splash
-    sf::Sprite splash;
-    splash.setPosition(0.5*WINDOW_WIDTH, 0.5*WINDOW_HEIGHT);
-    splash.setOrigin(0.5*WINDOW_WIDTH, 0.5*WINDOW_HEIGHT);
-    splash.setTexture(splash_texture);
-    bool key_pressed = false;
-    while (window.isOpen() && !key_pressed)
-    {
-        window.clear();
-        window.draw(splash);
-        window.display();
-        sf::Event event;
-        while (window.pollEvent(event)){
-            if (event.type == sf::Event::Closed)
-                window.close();
-
-            if (event.type == sf::Event::KeyPressed) {
-                key_pressed = true;
-                break;
+                if (event.type == sf::Event::KeyPressed) {
+                    key_pressed = true;
+                    break;
+                }
             }
         }
-    }
 
-    // Execute levels
-    for (int n_level = 0; n_level < 3; n_level++) {
-        int n_boxes = 2;
-        while (window.isOpen() && n_boxes < 12) {
-            runLevel(window, topview, sideview, n_boxes++, art, levels[n_level]);
+        // Execute levels
+        for (int n_level = 0; n_level < 3; n_level++) {
+            int n_boxes = 2;
+            while (window.isOpen() && n_boxes < 12) {
+                runLevel(window, topview, sideview, n_boxes++, art, levels[n_level]);
+            }
         }
     }
 
